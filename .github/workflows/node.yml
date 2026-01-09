@@ -14,8 +14,9 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 20.x
-    - run: npm install --omit=dev
-    - run: |
-        echo "GOOGLE_CREDENTIALS=${{ secrets.GOOGLE_CREDENTIALS }}" >> $GITHUB_ENV
-        echo "GOOGLE_SPREADSHEET_ID=${{ secrets.GOOGLE_SPREADSHEET_ID }}" >> $GITHUB_ENV
-    - run: node index.js || true
+    - run: npm install
+    - name: Run script
+      run: node index.js
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        GOOGLE_SPREADSHEET_ID: ${{ secrets.GOOGLE_SPREADSHEET_ID }}
