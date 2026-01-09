@@ -1,8 +1,8 @@
 const { google } = require('googleapis');
 
-async function appendData() {
+// Функция для записи данных (твоя основная логика)
+async function appendToSheet(orderData) {
   try {
-    // 1. Авторизация через секреты GitHub
     const auth = new google.auth.GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -11,26 +11,34 @@ async function appendData() {
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
-    // 2. Данные, которые мы запишем для теста
+    // Формируем строку из данных заказа (имя, телефон, заказ и т.д.)
     const values = [[
-      new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' }), 
-      "Тест из GitHub Actions", 
-      "Связь установлена успешно! ✅"
+      new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' }),
+      orderData.name || 'Не указано',
+      orderData.phone || 'Не указано',
+      orderData.orderItems || 'Пусто',
+      orderData.totalPrice || '0'
     ]];
-    
-    // 3. Отправка в таблицу
+
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: 'Sheet1!A:C', // Убедитесь, что лист в таблице называется Sheet1 или измените на свой
+      range: 'Sheet1!A:E', // Теперь захватываем больше колонок
       valueInputOption: 'USER_ENTERED',
       resource: { values },
     });
 
-    console.log('✅ Данные успешно добавлены в таблицу!');
+    console.log('✅ Заказ успешно записан в таблицу!');
   } catch (error) {
-    console.error('❌ Ошибка при работе с таблицей:', error.message);
-    process.exit(1); // Сообщаем GitHub Actions, что произошла ошибка
+    console.error('❌ Ошибка записи:', error);
   }
 }
 
-appendData();
+// ДЛЯ ПРОВЕРКИ: Имитируем приход данных (потом это будет приходить с сайта)
+const testOrder = {
+  name: "Дилмурат",
+  phone: "+998999771485",
+  orderItems: "Тестовый набор Meat",
+  totalPrice: "50000"
+};
+
+appendToSheet(testOrder);
