@@ -1,0 +1,42 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create .env file
+      run: |
+        echo "GOOGLE_SPREADSHEET_ID=${{ secrets.GOOGLE_SPREADSHEET_ID }}" >> .env
+        echo "DATABASE_URL=file:./dev.db" >> .env
+        echo 'GOOGLE_CREDENTIALS="${{ secrets.GOOGLE_CREDENTIALS }}"' >> .env
+    
+    - name: Build TypeScript
+      run: npm run build
+    
+    - name: Test compilation
+      run: |
+        if [ "${{ matrix.node-version }}" = "18.x" ]; then
+          echo "Testing on Node.js 18.x"
+        fi
